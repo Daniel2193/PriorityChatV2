@@ -14,7 +14,7 @@ namespace PriorityChatV2
         [STAThread]
         static int Main(string[] args)
         {
-            string version = "2.5.0";
+            string version = "2.4.2";
             if (args.Length == 1){
                 if(args[0] == "--version" || args[0] == "-v"){
                     Console.WriteLine(version);
