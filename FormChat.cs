@@ -88,6 +88,7 @@ namespace PriorityChatV2
             try{bw.CancelAsync();}catch{}
             ConfigManager.saveConfig();
             Application.Exit();
+            Environment.Exit(0);
         }
         private void button2_Click(object sender, EventArgs e)
         {
