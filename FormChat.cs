@@ -124,10 +124,17 @@ namespace PriorityChatV2
         }
         private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
         {
-            ChatMessage item = listBox1.Items[e.Index] as ChatMessage;
-            if (item != null)
+            try
             {
-                e.Graphics.DrawString(item.Time.ToString("HH:mm:ss") + " | <<" + item.Sender + ">>: " + item.Message, e.Font, new SolidBrush(Color.White), e.Bounds);
+                ChatMessage item = listBox1.Items[e.Index] as ChatMessage;
+                if (item != null)
+                {
+                    e.Graphics.DrawString(item.Time.ToString("HH:mm:ss") + " | <<" + item.Sender + ">>: " + item.Message, e.Font, new SolidBrush(Color.White), e.Bounds);
+                }
+            }
+            catch(Exception ex)
+            {
+
             }
         }
         private void bw_DoWork(object o, DoWorkEventArgs e)
@@ -157,6 +164,10 @@ namespace PriorityChatV2
                                 processMessage(split[0], split[2]);
                             }
                         }
+                    }
+                    if(split.Length == 2)
+                    {
+                        writeMessage(split[0], split[1]);
                     }
                 }
             }
