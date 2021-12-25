@@ -132,11 +132,7 @@ namespace PriorityChatV2
                 {
                     e.Graphics.DrawString(item.Time.ToString("HH:mm:ss") + " | <<" + item.Sender + ">>: " + item.Message, e.Font, new SolidBrush(Color.White), e.Bounds);
                 }
-            }
-            catch(Exception ex)
-            {
-
-            }
+            }catch(Exception){}
         }
         private void bw_DoWork(object o, DoWorkEventArgs e)
         {
