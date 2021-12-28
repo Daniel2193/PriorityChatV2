@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace PriorityChatV2
 {
@@ -13,10 +8,15 @@ namespace PriorityChatV2
         public int port { get; set; } = 21930;
         public string username { get; set; } = "user";
         public bool showNotifications { get; set; } = false;
-        //Not used yet
+        public int colorMessagesR { get; set; } = 255;
+        public int colorMessagesG { get; set; } = 255;
+        public int colorMessagesB { get; set; } = 255;
         public Color colorMessages { get; set; } = Color.FromArgb(255, 255, 255);
-        //Not used yet
+        public int colorMessagesReadR { get; set; } = 150;
+        public int colorMessagesReadG { get; set; } = 150;
+        public int colorMessagesReadB { get; set; } = 150;
         public Color colorMessagesRead { get; set; } = Color.FromArgb(150, 150, 150);
-        public bool sendOnEnter = false;
+        public bool sendOnEnter { get; set; } = false;
+        public int emoteScale { get; set; } = 100;
     }
 }

@@ -1,83 +1,71 @@
 ﻿using System.Net;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Runtime.InteropServices;
-using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace PriorityChatV2
 {
     public partial class FormChat : Form
     {
-        public string version = "";
+        public static string version = "2.5.0";
         private string[] changelog =
         {
             "Upcoming/Planned Features:",
             "",
-            
-            "[v2.5.0: Self-updating]",
-            "[v2.5.0: Userlist/Userstatus]",
-            "[v2.4.1: Fix colored messages]",
-            "[v2.4.1: change changelog POG]",
-            "",
+            "Add emote manager",
             "",
             "",
             "Actual changes:",
             "",
-            "v2.4.0: UPDATED   slight changelog upgrade (will be changed)",
-            "v2.4.0: ADDED      \"Send message on ENTER\" feature",
-            "v2.4.0: ADDED      Settings window closed automatically after clicking on \"apply\"",
-            "v2.4.0: ADDED      message timestamps",
-            "v2.4.0: ADDED      adaptive UI scaling",
-            "v2.3.7: FIXED         DLL dependency by shipping it inside the exe file",
-            "v2.3.6: FIXED         quit button",
-            "v2.3.6: FIXED         usernames not showing up in chat",
-            "v2.3.5: UPDATED   Changelog",
-            "v2.3.4: ADDED      auto-scroll to chat",
-            "v2.3.3: FIXED         bug where messages could be rendered invisible",
-            "v2.3.2: REMOVED (temporary) colored messages",
-            "v2.3.1: UPDATED   Flash now includes Windows internal flash",
-            "v2.3.0: ADDED      Changelog",
-            "v2.3.0: ADDED      Colors to Messages",
-            "v2.3.0: UPDATED   Structural Rework",
-            "v2.3.0: FIXED         flash"
+            "v2.5.0: Added Userlist/Userstatus",
+            "v2.5.0: Code cleanup",
+            "v2.5.0: Added external auto/self updateing with version history",
+            "v2.5.0: Changed message transmition protocol",
+            "v2.5.0: Added Message colors to settings",
+            "v2.5.0: Fixed Colored Messages",
+            "v2.5.0: Changed the way the chat is displayed",
+            "v2.5.0: Added support for emotes",
+            "v2.5.0: Moved \"Send on Enter\" to the settings window",
+            "v2.4.1: Fixed \"Send on Enter\" scaling",
+            "v2.4.0: slight changelog upgrade (will be changed)",
+            "v2.4.0: Added \"Send message on ENTER\" feature",
+            "v2.4.0: Settings window will close automatically after clicking on \"apply\"",
+            "v2.4.0: Added message timestamps",
+            "v2.4.0: Added adaptive UI scaling",
+            "v2.3.7: Removed DLL dependency by shipping it inside the exe file",
+            "v2.3.6: Quit button works again",
+            "v2.3.6: Fixed usernames not showing up in chat",
+            "v2.3.5: Updated Changelog",
+            "v2.3.4: Added auto-scroll to chat",
+            "v2.3.3: Fixed a bug where messages could not be displayed",
+            "v2.3.2: (temporary) removed colored messages",
+            "v2.3.1: Flash now includes Windows internal flash system",
+            "v2.3.0: Added Changelog",
+            "v2.3.0: Added Colors to Messages",
+            "v2.3.0: Structural Rework",
+            "v2.3.0: Flash works again",
         };
         public FormSettings settings = new FormSettings();
         public static FormChat instance;
         BackgroundWorker bw = new BackgroundWorker();
-        public FormChat(string version)
+        public FormChat()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                string resourceName = new AssemblyName(args.Name).Name + ".dll";
-                string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
-
-                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
-                {
-                    Byte[] assemblyData = new Byte[stream.Length];
-                    stream.Read(assemblyData, 0, assemblyData.Length);
-                    return Assembly.Load(assemblyData);
-                }
-            };
-            this.version = version;
             InitializeComponent();
             instance = this;
         }
         private void FormChat_Load(object sender, EventArgs e)
         {
-            ConfigManager.readConfig();
+            ConfigManager.setup();
             NetworkManager.setup();
-            ChangelogManager.setup();
-            listBox1.DrawMode = DrawMode.OwnerDrawFixed;
+            EmoteManager.loadEmotes();
             this.Text = "PriorityChatV" + version;
             bw.DoWork += new DoWorkEventHandler(bw_DoWork);
             bw.WorkerSupportsCancellation = true;
@@ -85,15 +73,17 @@ namespace PriorityChatV2
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            try{bw.CancelAsync();}catch{}
+            try { bw.CancelAsync(); } catch { }
             ConfigManager.saveConfig();
+            NetworkManager.sendStatus(Status.OFFLINE);
             Application.Exit();
             Environment.Exit(0);
         }
         private void button2_Click(object sender, EventArgs e)
         {
             button2.Enabled = false;
-            if (!NetworkManager.sendMessage(textBox1.Text))
+            ChatMessage message = new ChatMessage(textBox1.Text, ConfigManager.getConfig().username);
+            if (!NetworkManager.sendMessage(message))
             {
                 MessageBox.Show("Message could not be send");
             }
@@ -104,35 +94,47 @@ namespace PriorityChatV2
         {
             settings.Show();
         }
-        public void writeMessage(string user, string message)
+        public void writeMessage(ChatMessage message)
         {
             Invoke((MethodInvoker)delegate
             {
-                listBox1.Items.Add(new ChatMessage(message, user));
-                listBox1.SelectedIndex = listBox1.Items.Count - 1;
-                if (ConfigManager.getConfig().showNotifications && !listBox1.Items[listBox1.Items.Count - 1].ToString().Contains(ConfigManager.getConfig().username))
+                richTextBox1.Select(richTextBox1.TextLength, 0);
+                richTextBox1.SelectionColor = Color.White;
+                richTextBox1.AppendText(message.Time.ToString("HH:mm:ss") + " ");
+                richTextBox1.SelectionColor = Color.Blue;
+                richTextBox1.AppendText(message.Sender);
+                richTextBox1.SelectionColor = Color.White;
+                richTextBox1.AppendText(": ");
+                richTextBox1.SelectionColor = ConfigManager.getConfig().colorMessages;
+                richTextBox1.AppendText(message.Message + "\n");
+                richTextBox1.Rtf = processRTF(richTextBox1.Rtf);
+                richTextBox1.ScrollToCaret();
+                if (ConfigManager.getConfig().showNotifications && !message.Sender.Equals(ConfigManager.getConfig().username))
                     FlashWindowEx(instance);
             });
         }
+        private string processRTF(string msg)
+        {
+            string[] emotes = EmoteManager.GetEmotes();
+            foreach (string emote in emotes)
+            {
+                Bitmap bmp = EmoteManager.GetEmote(emote);
+                bmp.MakeTransparent(bmp.GetPixel(0, 0));
+                var stream = new MemoryStream();
+                byte[] data = File.ReadAllBytes(EmoteManager.GetEmotePath(emote));
+                stream.Write(data, 0, data.Length);
+                msg = msg.Replace(emote, @"{\pict\pngblip\picw" + bmp.Width * 15 + "\\pich" + bmp.Height * 15 + "\\picwgoal" + 3 * ConfigManager.getConfig().emoteScale + "\\pichgoal" + 3 * ConfigManager.getConfig().emoteScale + " " + BitConverter.ToString(stream.ToArray()).Replace("-", "") + "}");
+            }
+            return msg;
+        }
         private void button4_Click(object sender, EventArgs e)
         {
-            string cl = "";
-            foreach (string s in changelog)
+            string changelog = "";
+            foreach (string s in this.changelog)
             {
-                cl += s + "\n";
+                changelog += s + "\n";
             }
-            MessageBox.Show(cl);
-        }
-        private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            try
-            {
-                ChatMessage item = listBox1.Items[e.Index] as ChatMessage;
-                if (item != null)
-                {
-                    e.Graphics.DrawString(item.Time.ToString("HH:mm:ss") + " | <<" + item.Sender + ">>: " + item.Message, e.Font, new SolidBrush(Color.White), e.Bounds);
-                }
-            }catch(Exception){}
+            MessageBox.Show(changelog);
         }
         private void bw_DoWork(object o, DoWorkEventArgs e)
         {
@@ -143,35 +145,43 @@ namespace PriorityChatV2
             {
                 byte[] buffer = new byte[4096];
                 int recv = socket.Receive(buffer);
-                string message = Encoding.ASCII.GetString(buffer, 0, recv);
-                if(message.Contains("|")){
-                    string[] split = message.Split('|');
-                    if(split.Length >= 3){
-                        if(!split[0].Equals(ConfigManager.getConfig().username)){
-                            if(split[1].Equals("status")){
-                                if(split[2].Equals("online")){
-                                    writeMessage(split[0], split[0] + " is online");
-                                }else{
-                                    writeMessage(split[0], split[0] + " is offline");
-                                }
-                            }else if(split[1].Equals("message")){
-                                writeMessage(split[0], split[2]);
-                            }
-                            else if(split[1].Equals("eval")){
-                                processMessage(split[0], split[2]);
-                            }
-                        }
-                    }
-                    if(split.Length == 2)
+                string rawMsg = Encoding.ASCII.GetString(buffer, 0, recv);
+                string[] split = Regex.Split(rawMsg, Regex.Escape(Consts.msgSeperator));
+                if (split.Length >= 2)
+                {
+                    if (split[0].Equals("json"))
                     {
-                        writeMessage(split[0], split[1]);
+                        ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(split[1]);
+                        writeMessage(message);
+                    }
+                    if (split[0].Equals("status"))
+                    {
+                        if (split.Length != 3)
+                            continue;
+                        int status = 2;
+                        int.TryParse(split[2], out status);
+                        UserManager.UpdateUser(split[1], (Status)status);
+                        updateUserList();
                     }
                 }
             }
         }
-        private void processMessage(string user, string rawMessage)
-        {
-            
+        private void updateUserList(){
+            Invoke((MethodInvoker)delegate
+            {
+                richTextBox2.Text = "";
+                foreach (KeyValuePair<string, Status> user in UserManager.users)
+                {
+                    richTextBox2.Select(richTextBox2.TextLength, 0);
+                    if(user.Value == Status.ONLINE)
+                        richTextBox2.SelectionColor = Color.Green;
+                    else if(user.Value == Status.OFFLINE)
+                        richTextBox2.SelectionColor = Color.Black;
+                    else if(user.Value == Status.AFK)
+                        richTextBox2.SelectionColor = Color.Yellow;
+                    richTextBox2.AppendText(user.Key + "\n");
+                }
+            });
         }
         #region flashWindow
         [DllImport("user32.dll")]
@@ -202,18 +212,17 @@ namespace PriorityChatV2
         #endregion
         private void FormChat_Resize(object sender, EventArgs e)
         {
-            listBox1.Size = new Size((int)(this.Size.Width - 40), this.Size.Height - 165);
             textBox1.Size = new Size(this.Size.Width - button2.Size.Width - 2 * Consts.globalOffset, textBox1.Size.Height);
-            textBox1.Location = new Point(textBox1.Location.X, this.Size.Height - textBox1.Size.Height - 3*Consts.globalOffset - button3.Size.Height);
+            textBox1.Location = new Point(textBox1.Location.X, this.Size.Height - textBox1.Size.Height - 3 * Consts.globalOffset - button3.Size.Height);
             button2.Location = new Point(this.Size.Width - button2.Size.Width - Consts.globalOffset, textBox1.Location.Y);
             button1.Location = new Point(button1.Location.X, this.Size.Height - 70);
             button3.Location = new Point(button3.Location.X, this.Size.Height - 70);
             button4.Location = new Point(button4.Location.X, this.Size.Height - 70);
-            checkBox1.Location = new Point(checkBox1.Location.X, this.Size.Height - 70 - (int)(checkBox1.Height/2) + (int)(button1.Size.Height/2));
+            richTextBox1.Size = new Size(this.Size.Width - 2 * Consts.globalOffset, this.Size.Height - textBox1.Size.Height - 4 * Consts.globalOffset - button3.Size.Height - button4.Size.Height);
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
-            if(ConfigManager.getConfig().sendOnEnter && e.KeyCode == Keys.Enter && !e.Shift)
+            if (ConfigManager.getConfig().sendOnEnter && e.KeyCode == Keys.Enter && !e.Shift)
             {
                 button2_Click(null, null);
                 e.SuppressKeyPress = true;
@@ -221,13 +230,32 @@ namespace PriorityChatV2
         }
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            ConfigManager.getConfig().sendOnEnter = checkBox1.Checked;
             ConfigManager.saveConfig();
         }
         private void FormChat_FormClosing(object sender, FormClosingEventArgs e)
         {
             button1_Click(null, null);
             e.Cancel = true;
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            //Userlist
+        }
+
+        private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            NetworkManager.sendStatus(Status.AFK);
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            NetworkManager.sendStatus(Status.ONLINE);
         }
     }
 }

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PriorityChatV2
+﻿namespace PriorityChatV2
 {
     class Consts
     {
         public static int globalOffset = 20;
+        public static string msgSeperator = "|$|";
+        public static int emoteResolution = 25;
     }
 }

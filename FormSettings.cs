@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace PriorityChatV2
 {
@@ -29,11 +18,13 @@ namespace PriorityChatV2
             textBox2.Text = ConfigManager.getConfig().port.ToString();
             textBox3.Text = ConfigManager.getConfig().username;
             checkBox1.Checked = ConfigManager.getConfig().showNotifications;
+            checkBox2.Checked = ConfigManager.getConfig().sendOnEnter;
+            numericUpDown1.Value = ConfigManager.getConfig().emoteScale;
         }
         private void button1_Click(object sender, EventArgs e)
         {
             if(checkConfig()){
-                ConfigManager.updateConfig(textBox1.Text, int.Parse(textBox2.Text), textBox3.Text, checkBox1.Checked, ConfigManager.getConfig().colorMessages, ConfigManager.getConfig().colorMessagesRead);
+                ConfigManager.updateConfig(textBox1.Text, int.Parse(textBox2.Text), textBox3.Text, checkBox1.Checked, ConfigManager.getConfig().colorMessages, ConfigManager.getConfig().colorMessagesRead, checkBox2.Checked, (int)numericUpDown1.Value);
                 this.Hide();
             }
         }
@@ -58,12 +49,45 @@ namespace PriorityChatV2
                 MessageBox.Show("Please enter a valid Username");
                 return false;
             }
+            if(numericUpDown1.Value < 10 || numericUpDown1.Value > 400){
+                MessageBox.Show("Please enter a valid Scale factor");
+                return false;
+            }
             return true;
         }
         private void FormSettings_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ColorDialog cd = new ColorDialog();
+            if (cd.ShowDialog() == DialogResult.OK)
+            {
+                ConfigManager.getConfig().colorMessages = cd.Color;
+                ConfigManager.getConfig().colorMessagesR = cd.Color.R;
+                ConfigManager.getConfig().colorMessagesG = cd.Color.G;
+                ConfigManager.getConfig().colorMessagesB = cd.Color.B;
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            ColorDialog cd = new ColorDialog();
+            if (cd.ShowDialog() == DialogResult.OK)
+            {
+                ConfigManager.getConfig().colorMessagesRead = cd.Color;
+                ConfigManager.getConfig().colorMessagesReadR = cd.Color.R;
+                ConfigManager.getConfig().colorMessagesReadG = cd.Color.G;
+                ConfigManager.getConfig().colorMessagesReadB = cd.Color.B;
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            EmoteManager.loadEmotes();
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace PriorityChatV2
 {
@@ -14,33 +11,56 @@ namespace PriorityChatV2
         private static Config config = null;
         private static JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
         public static string pathConfig = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Daniel2193\\PriorityChat\\configChat.json";
+        public static string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Daniel2193\\PriorityChat\\";
 
         public static Config getConfig()
         {
             return config;
         }
-
         public static void saveConfig()
         {
             string jsonConfig = JsonSerializer.Serialize(config, options);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             File.WriteAllText(pathConfig, jsonConfig);
         }
 
-        public static void readConfig()
+        public static void setup()
         {
-            if (File.Exists(pathConfig))
+            try
             {
-                string jsonConfig = File.ReadAllText(pathConfig);
-                config = JsonSerializer.Deserialize<Config>(jsonConfig, options);
+                if (!Directory.Exists(path.Replace("PriorityChat\\", "")))
+                {
+                    Directory.CreateDirectory(path.Replace("PriorityChat\\", ""));
+                }
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                File.WriteAllText(path + ".version.bin", FormChat.version);
+                if (File.Exists(pathConfig))
+                {
+                    string jsonConfig = File.ReadAllText(pathConfig);
+                    config = JsonSerializer.Deserialize<Config>(jsonConfig, options);
+                    config.colorMessages = Color.FromArgb(config.colorMessagesR, config.colorMessagesG, config.colorMessagesB);
+                    config.colorMessagesRead = Color.FromArgb(config.colorMessagesReadR, config.colorMessagesReadG, config.colorMessagesReadB);
+                }
+                else
+                {
+                    config = new Config();
+                    saveConfig();
+                }
             }
-            else
+            catch (Exception e)
             {
-                config = new Config();
-                saveConfig();
+                MessageBox.Show("Error in setup: \n" + e.Message);
             }
+
         }
 
-        public static void updateConfig(string ip, int port, string username, bool showNotifications, Color colorMessages, Color colorMessagesRead, bool sendOnEnter = false)
+        public static void updateConfig(string ip, int port, string username, bool showNotifications, Color colorMessages, Color colorMessagesRead, bool sendOnEnter, int emoteScale)
         {
             config.ip = ip;
             config.port = port;
@@ -49,6 +69,13 @@ namespace PriorityChatV2
             config.colorMessages = colorMessages;
             config.colorMessagesRead = colorMessagesRead;
             config.sendOnEnter = sendOnEnter;
+            config.emoteScale = emoteScale;
+            config.colorMessagesR = colorMessages.R;
+            config.colorMessagesG = colorMessages.G;
+            config.colorMessagesB = colorMessages.B;
+            config.colorMessagesReadR = colorMessagesRead.R;
+            config.colorMessagesReadG = colorMessagesRead.G;
+            config.colorMessagesReadB = colorMessagesRead.B;
             saveConfig();
         }
     }

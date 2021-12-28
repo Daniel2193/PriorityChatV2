@@ -227,18 +227,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangelogManager.cs" />
     <Compile Include="ChatMessage.cs" />
     <Compile Include="ChangelogType.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ConfigManager.cs" />
     <Compile Include="Consts.cs" />
-    <Compile Include="FormChangelog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormChangelog.Designer.cs">
-      <DependentUpon>FormChangelog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="EmoteManager.cs" />
     <Compile Include="FormChat.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -251,26 +245,17 @@
     <Compile Include="FormSettings.Designer.cs">
       <DependentUpon>FormSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormUserlist.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormUserlist.Designer.cs">
-      <DependentUpon>FormUserlist.cs</DependentUpon>
-    </Compile>
     <Compile Include="NetworkManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FormChangelog.resx">
-      <DependentUpon>FormChangelog.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="Status.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserManager.cs" />
     <EmbeddedResource Include="FormChat.resx">
       <DependentUpon>FormChat.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormSettings.resx">
       <DependentUpon>FormSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormUserlist.resx">
-      <DependentUpon>FormUserlist.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
