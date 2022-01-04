@@ -131,7 +131,7 @@ namespace PriorityChatV2
             this.richTextBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.richTextBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBox2.ForeColor = System.Drawing.Color.White;
-            this.richTextBox2.Location = new System.Drawing.Point(815, 47);
+            this.richTextBox2.Location = new System.Drawing.Point(796, 47);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
             this.richTextBox2.Size = new System.Drawing.Size(226, 330);
@@ -142,7 +142,7 @@ namespace PriorityChatV2
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(889, 16);
+            this.label1.Location = new System.Drawing.Point(870, 16);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(66, 18);
             this.label1.TabIndex = 9;
@@ -152,7 +152,7 @@ namespace PriorityChatV2
             // 
             this.button6.BackColor = System.Drawing.SystemColors.Control;
             this.button6.ForeColor = System.Drawing.Color.Black;
-            this.button6.Location = new System.Drawing.Point(815, 383);
+            this.button6.Location = new System.Drawing.Point(796, 383);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(110, 23);
             this.button6.TabIndex = 10;
@@ -163,7 +163,7 @@ namespace PriorityChatV2
             // button7
             // 
             this.button7.ForeColor = System.Drawing.Color.Black;
-            this.button7.Location = new System.Drawing.Point(931, 383);
+            this.button7.Location = new System.Drawing.Point(912, 383);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(110, 23);
             this.button7.TabIndex = 11;
@@ -176,7 +176,7 @@ namespace PriorityChatV2
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(1053, 414);
+            this.ClientSize = new System.Drawing.Size(796, 411);
             this.Controls.Add(this.button7);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.label1);

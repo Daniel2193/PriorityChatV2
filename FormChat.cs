@@ -15,7 +15,7 @@ namespace PriorityChatV2
 {
     public partial class FormChat : Form
     {
-        public static string version = "2.5.0";
+        public static string version = "2.5.1";
         private string[] changelog =
         {
             "Upcoming/Planned Features:",
@@ -25,6 +25,7 @@ namespace PriorityChatV2
             "",
             "Actual changes:",
             "",
+            "v2.5.1: Fixed UI Scaling",
             "v2.5.0: Added Userlist/Userstatus",
             "v2.5.0: Code cleanup",
             "v2.5.0: Added external auto/self updateing with version history",
@@ -56,6 +57,11 @@ namespace PriorityChatV2
         public FormSettings settings = new FormSettings();
         public static FormChat instance;
         BackgroundWorker bw = new BackgroundWorker();
+        private bool expanded = false;
+        private int normalWidth = 812;
+        private int normalHeight = 450;
+        private int expandedWidth = 1050;
+        private int expandedDiff = 238;
         public FormChat()
         {
             InitializeComponent();
@@ -166,18 +172,19 @@ namespace PriorityChatV2
                 }
             }
         }
-        private void updateUserList(){
+        private void updateUserList()
+        {
             Invoke((MethodInvoker)delegate
             {
                 richTextBox2.Text = "";
                 foreach (KeyValuePair<string, Status> user in UserManager.users)
                 {
                     richTextBox2.Select(richTextBox2.TextLength, 0);
-                    if(user.Value == Status.ONLINE)
+                    if (user.Value == Status.ONLINE)
                         richTextBox2.SelectionColor = Color.Green;
-                    else if(user.Value == Status.OFFLINE)
+                    else if (user.Value == Status.OFFLINE)
                         richTextBox2.SelectionColor = Color.Black;
-                    else if(user.Value == Status.AFK)
+                    else if (user.Value == Status.AFK)
                         richTextBox2.SelectionColor = Color.Yellow;
                     richTextBox2.AppendText(user.Key + "\n");
                 }
@@ -212,13 +219,24 @@ namespace PriorityChatV2
         #endregion
         private void FormChat_Resize(object sender, EventArgs e)
         {
-            textBox1.Size = new Size(this.Size.Width - button2.Size.Width - 2 * Consts.globalOffset, textBox1.Size.Height);
-            textBox1.Location = new Point(textBox1.Location.X, this.Size.Height - textBox1.Size.Height - 3 * Consts.globalOffset - button3.Size.Height);
-            button2.Location = new Point(this.Size.Width - button2.Size.Width - Consts.globalOffset, textBox1.Location.Y);
-            button1.Location = new Point(button1.Location.X, this.Size.Height - 70);
-            button3.Location = new Point(button3.Location.X, this.Size.Height - 70);
-            button4.Location = new Point(button4.Location.X, this.Size.Height - 70);
-            richTextBox1.Size = new Size(this.Size.Width - 2 * Consts.globalOffset, this.Size.Height - textBox1.Size.Height - 4 * Consts.globalOffset - button3.Size.Height - button4.Size.Height);
+            int width = this.Width;
+            if(expanded)
+                width -= expandedDiff;
+            richTextBox1.Size = new Size(width - (Consts.globalOffset * 3), this.Height - textBox1.Height - button3.Height - Consts.globalOffset * 6);
+            richTextBox2.Location = new Point(width - Consts.globalOffset, richTextBox2.Location.Y);
+            
+            label1.Location = new Point(width + label1.Width, label1.Location.Y);
+            button5.Location = new Point(width - Consts.globalOffset * 2 - button5.Width, this.Height - (int)(Consts.globalOffset * 3.7f) - button5.Height);
+            textBox1.Location = new Point(textBox1.Location.X, this.Height - textBox1.Height - button3.Height - (int)(Consts.globalOffset * 4.3f));
+            textBox1.Size = new Size(width - button2.Width - Consts.globalOffset * 4, textBox1.Height);
+            button2.Location = new Point(width - button2.Width - Consts.globalOffset * 2, textBox1.Location.Y);
+            richTextBox2.Size = new Size(richTextBox2.Width, button2.Bottom - richTextBox2.Top);
+            button1.Location = new Point(button1.Location.X, button5.Location.Y);
+            button3.Location = new Point(button3.Location.X, button5.Location.Y);
+            button4.Location = new Point(button4.Location.X, button5.Location.Y);
+            button6.Location = new Point(width - Consts.globalOffset, button5.Location.Y);
+            button7.Location = new Point(width - (int)(Consts.globalOffset * 0.5f) + button6.Width, button5.Location.Y);
+            
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -237,22 +255,28 @@ namespace PriorityChatV2
             button1_Click(null, null);
             e.Cancel = true;
         }
-
         private void button5_Click(object sender, EventArgs e)
         {
-            //Userlist
+            expanded = !expanded;
+            if (expanded)
+            {
+                this.Width += expandedWidth - normalWidth;
+                button5.Text = "<<";
+            }
+            else
+            {
+                this.Width -= expandedWidth - normalWidth;
+                button5.Text = ">>";
+            }
         }
-
         private void richTextBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = true;
         }
-
         private void button6_Click(object sender, EventArgs e)
         {
             NetworkManager.sendStatus(Status.AFK);
         }
-
         private void button7_Click(object sender, EventArgs e)
         {
             NetworkManager.sendStatus(Status.ONLINE);
