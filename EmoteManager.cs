@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -8,7 +7,6 @@ namespace PriorityChatV2
 {
     class EmoteManager
     {
-        //emoteName, filePath
         private static Dictionary<string, string> emotes = new Dictionary<string, string>();
         public static void AddEmote(string emoteName, string filePath)
         {
@@ -46,18 +44,6 @@ namespace PriorityChatV2
                 }
             }
             return null;
-        }
-        public static string GetEmoteAsHexString(string emoteName)
-        {
-            if(emotes.ContainsKey(emoteName))
-            {
-                MemoryStream ms = new MemoryStream();
-                Image img = Image.FromFile(emotes[emoteName]);
-                img.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                byte[] imageBytes = ms.ToArray();
-                return BitConverter.ToString(imageBytes).Replace("-", "");
-            }
-            return emoteName;
         }
         public static string[] GetEmotes()
         {

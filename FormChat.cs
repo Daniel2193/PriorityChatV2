@@ -9,22 +9,24 @@ using System.Net.Sockets;
 using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Collections.Generic;
 
 namespace PriorityChatV2
 {
     public partial class FormChat : Form
     {
-        public static string version = "2.5.1";
+        public static string version = "2.6.0-pre";
         private string[] changelog =
         {
             "Upcoming/Planned Features:",
             "",
-            "Add emote manager",
+            "Migrate to .NET 5 or 6",
+            "Add Emote Menu",
             "",
             "",
             "Actual changes:",
             "",
+            "v2.6.0: Added Username Color",
+            "v2.6.0: Added Emote Manager",
             "v2.5.1: Fixed UI Scaling",
             "v2.5.0: Added Userlist/Userstatus",
             "v2.5.0: Code cleanup",
@@ -55,12 +57,10 @@ namespace PriorityChatV2
             "v2.3.0: Flash works again",
         };
         public FormSettings settings = new FormSettings();
+        public FormEmotes emotes = new FormEmotes();
         public static FormChat instance;
         BackgroundWorker bw = new BackgroundWorker();
         private bool expanded = false;
-        private int normalWidth = 812;
-        private int normalHeight = 450;
-        private int expandedWidth = 1050;
         private int expandedDiff = 238;
         public FormChat()
         {
@@ -70,6 +70,7 @@ namespace PriorityChatV2
         private void FormChat_Load(object sender, EventArgs e)
         {
             ConfigManager.setup();
+            UserManager.setup();
             NetworkManager.setup();
             EmoteManager.loadEmotes();
             this.Text = "PriorityChatV" + version;
@@ -102,12 +103,13 @@ namespace PriorityChatV2
         }
         public void writeMessage(ChatMessage message)
         {
+            Color color = UserManager.userList.Find(x => x.Username == message.Sender).Color;
             Invoke((MethodInvoker)delegate
             {
                 richTextBox1.Select(richTextBox1.TextLength, 0);
                 richTextBox1.SelectionColor = Color.White;
                 richTextBox1.AppendText(message.Time.ToString("HH:mm:ss") + " ");
-                richTextBox1.SelectionColor = Color.Blue;
+                richTextBox1.SelectionColor = color == Color.Empty ? Color.Blue : color;
                 richTextBox1.AppendText(message.Sender);
                 richTextBox1.SelectionColor = Color.White;
                 richTextBox1.AppendText(": ");
@@ -155,7 +157,7 @@ namespace PriorityChatV2
                 string[] split = Regex.Split(rawMsg, Regex.Escape(Consts.msgSeperator));
                 if (split.Length >= 2)
                 {
-                    if (split[0].Equals("json"))
+                    if (split[0].Equals("msg"))
                     {
                         ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(split[1]);
                         writeMessage(message);
@@ -166,27 +168,31 @@ namespace PriorityChatV2
                             continue;
                         int status = 2;
                         int.TryParse(split[2], out status);
-                        UserManager.UpdateUser(split[1], (Status)status);
+                        UserManager.UpdateStatus(split[1], (Status)status);
+                        updateUserList();
+                    }
+                    if(split[0].Equals("heartbeat"))
+                    {
+                        if (split.Length != 4)
+                            continue;
+                        string[] colorSplit = split[3].Split(',');
+                        UserManager.UpdateUser(split[1], (Status)int.Parse(split[2]), Color.FromArgb(int.Parse(colorSplit[0]), int.Parse(colorSplit[1]), int.Parse(colorSplit[2])));
                         updateUserList();
                     }
                 }
             }
         }
+        private Color[] statusColors = new Color[] {Color.Green, Color.Yellow, Color.Black, Color.Red};
         private void updateUserList()
         {
             Invoke((MethodInvoker)delegate
             {
-                richTextBox2.Text = "";
-                foreach (KeyValuePair<string, Status> user in UserManager.users)
+                richTextBox2.Clear();
+                richTextBox2.Select(richTextBox2.TextLength, 0);
+                foreach (User user in UserManager.userList)
                 {
-                    richTextBox2.Select(richTextBox2.TextLength, 0);
-                    if (user.Value == Status.ONLINE)
-                        richTextBox2.SelectionColor = Color.Green;
-                    else if (user.Value == Status.OFFLINE)
-                        richTextBox2.SelectionColor = Color.Black;
-                    else if (user.Value == Status.AFK)
-                        richTextBox2.SelectionColor = Color.Yellow;
-                    richTextBox2.AppendText(user.Key + "\n");
+                    richTextBox2.SelectionColor = statusColors[(int)user.Status];
+                    richTextBox2.AppendText(user.Username + "\n");
                 }
             });
         }
@@ -236,7 +242,7 @@ namespace PriorityChatV2
             button4.Location = new Point(button4.Location.X, button5.Location.Y);
             button6.Location = new Point(width - Consts.globalOffset, button5.Location.Y);
             button7.Location = new Point(width - (int)(Consts.globalOffset * 0.5f) + button6.Width, button5.Location.Y);
-            
+            button8.Location = new Point(button8.Location.X, button5.Location.Y);
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
@@ -260,12 +266,12 @@ namespace PriorityChatV2
             expanded = !expanded;
             if (expanded)
             {
-                this.Width += expandedWidth - normalWidth;
+                this.Width += expandedDiff;
                 button5.Text = "<<";
             }
             else
             {
-                this.Width -= expandedWidth - normalWidth;
+                this.Width -= expandedDiff;
                 button5.Text = ">>";
             }
         }
@@ -280,6 +286,11 @@ namespace PriorityChatV2
         private void button7_Click(object sender, EventArgs e)
         {
             NetworkManager.sendStatus(Status.ONLINE);
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            emotes.Show();
         }
     }
 }

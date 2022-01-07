@@ -12,7 +12,6 @@ namespace PriorityChatV2
         private static JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
         public static string pathConfig = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Daniel2193\\PriorityChat\\configChat.json";
         public static string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Daniel2193\\PriorityChat\\";
-
         public static Config getConfig()
         {
             return config;
@@ -26,7 +25,6 @@ namespace PriorityChatV2
             }
             File.WriteAllText(pathConfig, jsonConfig);
         }
-
         public static void setup()
         {
             try
@@ -46,6 +44,7 @@ namespace PriorityChatV2
                     config = JsonSerializer.Deserialize<Config>(jsonConfig, options);
                     config.colorMessages = Color.FromArgb(config.colorMessagesR, config.colorMessagesG, config.colorMessagesB);
                     config.colorMessagesRead = Color.FromArgb(config.colorMessagesReadR, config.colorMessagesReadG, config.colorMessagesReadB);
+                    config.colorUsername = Color.FromArgb(config.colorUsernameR, config.colorUsernameG, config.colorUsernameB);
                 }
                 else
                 {
@@ -57,10 +56,8 @@ namespace PriorityChatV2
             {
                 MessageBox.Show("Error in setup: \n" + e.Message);
             }
-
         }
-
-        public static void updateConfig(string ip, int port, string username, bool showNotifications, Color colorMessages, Color colorMessagesRead, bool sendOnEnter, int emoteScale)
+        public static void updateConfig(string ip, int port, string username, bool showNotifications, Color colorMessages, Color colorMessagesRead, Color colorUsername, bool sendOnEnter, int emoteScale)
         {
             config.ip = ip;
             config.port = port;
@@ -68,6 +65,7 @@ namespace PriorityChatV2
             config.showNotifications = showNotifications;
             config.colorMessages = colorMessages;
             config.colorMessagesRead = colorMessagesRead;
+            config.colorUsername = colorUsername;
             config.sendOnEnter = sendOnEnter;
             config.emoteScale = emoteScale;
             config.colorMessagesR = colorMessages.R;
@@ -76,6 +74,10 @@ namespace PriorityChatV2
             config.colorMessagesReadR = colorMessagesRead.R;
             config.colorMessagesReadG = colorMessagesRead.G;
             config.colorMessagesReadB = colorMessagesRead.B;
+            config.colorUsernameR = colorUsername.R;
+            config.colorUsernameG = colorUsername.G;
+            config.colorUsernameB = colorUsername.B;
+            UserManager.UpdateColor(username, colorUsername);
             saveConfig();
         }
     }

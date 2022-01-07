@@ -16,6 +16,10 @@ namespace PriorityChatV2
         public int colorMessagesReadG { get; set; } = 150;
         public int colorMessagesReadB { get; set; } = 150;
         public Color colorMessagesRead { get; set; } = Color.FromArgb(150, 150, 150);
+        public int colorUsernameR { get; set; } = 0;
+        public int colorUsernameG { get; set; } = 0;
+        public int colorUsernameB { get; set; } = 255;
+        public Color colorUsername { get; set; } = Color.FromArgb(0, 0, 255);
         public bool sendOnEnter { get; set; } = false;
         public int emoteScale { get; set; } = 100;
     }

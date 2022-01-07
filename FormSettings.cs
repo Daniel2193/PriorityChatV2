@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace PriorityChatV2
 {
     public partial class FormSettings : Form
     {
         public static FormSettings instance;
+        private Color colorMessages;
+        private Color colorMessagesRead;
+        private Color colorUsername;
         public FormSettings()
         {
             InitializeComponent();
@@ -20,11 +24,14 @@ namespace PriorityChatV2
             checkBox1.Checked = ConfigManager.getConfig().showNotifications;
             checkBox2.Checked = ConfigManager.getConfig().sendOnEnter;
             numericUpDown1.Value = ConfigManager.getConfig().emoteScale;
+            colorMessages = ConfigManager.getConfig().colorMessages;
+            colorMessagesRead = ConfigManager.getConfig().colorMessagesRead;
+            colorUsername = ConfigManager.getConfig().colorUsername;
         }
         private void button1_Click(object sender, EventArgs e)
         {
             if(checkConfig()){
-                ConfigManager.updateConfig(textBox1.Text, int.Parse(textBox2.Text), textBox3.Text, checkBox1.Checked, ConfigManager.getConfig().colorMessages, ConfigManager.getConfig().colorMessagesRead, checkBox2.Checked, (int)numericUpDown1.Value);
+                ConfigManager.updateConfig(textBox1.Text, int.Parse(textBox2.Text), textBox3.Text, checkBox1.Checked, colorMessages, colorMessagesRead, colorUsername, checkBox2.Checked, (int)numericUpDown1.Value);
                 this.Hide();
             }
         }
@@ -65,12 +72,7 @@ namespace PriorityChatV2
         {
             ColorDialog cd = new ColorDialog();
             if (cd.ShowDialog() == DialogResult.OK)
-            {
-                ConfigManager.getConfig().colorMessages = cd.Color;
-                ConfigManager.getConfig().colorMessagesR = cd.Color.R;
-                ConfigManager.getConfig().colorMessagesG = cd.Color.G;
-                ConfigManager.getConfig().colorMessagesB = cd.Color.B;
-            }
+            colorMessages = cd.Color;
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -78,16 +80,21 @@ namespace PriorityChatV2
             ColorDialog cd = new ColorDialog();
             if (cd.ShowDialog() == DialogResult.OK)
             {
-                ConfigManager.getConfig().colorMessagesRead = cd.Color;
-                ConfigManager.getConfig().colorMessagesReadR = cd.Color.R;
-                ConfigManager.getConfig().colorMessagesReadG = cd.Color.G;
-                ConfigManager.getConfig().colorMessagesReadB = cd.Color.B;
+                colorMessagesRead = cd.Color;
             }
         }
-
         private void button4_Click(object sender, EventArgs e)
         {
             EmoteManager.loadEmotes();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            ColorDialog cd = new ColorDialog();
+            if (cd.ShowDialog() == DialogResult.OK)
+            {
+                colorUsername = cd.Color;
+            }
         }
     }
 }
